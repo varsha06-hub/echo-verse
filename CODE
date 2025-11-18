@@ -1,0 +1,41 @@
+
+import gradio as gr
+from gtts import gTTS
+import tempfile
+
+def generate_audio(text):
+    if not text.strip():
+        return None
+
+    # Generate temporary audio file
+    tts = gTTS(text)
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+    tts.save(temp_file.name)
+
+    return temp_file.name
+
+with gr.Blocks(title="EchoVerse - Audiobook Creator") as demo:
+    gr.Markdown("# 🎧 EchoVerse - Text to Audiobook Converter")
+
+    with gr.Tab("Paste Text"):
+        input_text = gr.Textbox(lines=10, label="Enter text")
+
+    with gr.Tab("Upload File"):
+        input_file = gr.File(label="Upload .txt file")
+
+    voice_output = gr.Audio(label="Generated Audio", type="filepath")
+    generate_btn = gr.Button("Generate Audio")
+
+    def handle_input(textbox, file):
+        if file:
+            return generate_audio(file.read().decode())
+        else:
+            return generate_audio(textbox)
+
+    generate_btn.click(
+        handle_input,
+        inputs=[input_text, input_file],
+        outputs=voice_output
+    )
+
+demo.launch()
